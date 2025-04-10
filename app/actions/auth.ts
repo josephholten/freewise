@@ -1,6 +1,6 @@
 "use server"
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@/generated/prisma_client";
 import bcrypt from "bcrypt";
 import { createSession, deleteSession } from "@/app/lib/session";
 

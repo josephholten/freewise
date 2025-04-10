@@ -10,8 +10,12 @@ services:
     ports:
       - '3000:3000'
     depends_on:
-      - test-db
-
+      test-db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://test:1234@test-db:5432/freewise?schema=public
+      - JWT_SECRET=test
+      
   test-db:
     image: postgres:17
     environment:
@@ -22,6 +26,11 @@ services:
       - postgres-data:/var/lib/postgresql/data
     ports:
       - '5432:5432'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
 
 volumes:
   postgres-data:
