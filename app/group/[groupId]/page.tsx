@@ -98,15 +98,12 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
 
         <div className="space-y-6">
           <div>
-            <h2 className="text-xl font-semibold mb-4">Members</h2>
-            <div className="space-y-2">
-              {group.members.map((member) => (
-                <div 
-                  key={member.id} 
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                >
-                  <span className="font-medium">{member.user.username}</span>
-                </div>
+            <div className="text-gray-600">
+              {group.members.map((member, index) => (
+                <span key={member.id}>
+                  {member.user.username}
+                  {index < group.members.length - 1 ? ', ' : ''}
+                </span>
               ))}
             </div>
           </div>
