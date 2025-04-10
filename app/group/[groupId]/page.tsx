@@ -19,12 +19,26 @@ type GroupWithMembers = Group & {
 type PageParams = { groupId: string };
 
 export default function GroupPage({params}: {params: Promise<PageParams>}) {
+  const rParams = use(params);
   const router = useRouter();
   const [group, setGroup] = useState<GroupWithMembers | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLeaving, setIsLeaving] = useState(false);
 
-  const rParams = use(params);
+  useEffect(() => {
+    const fetchGroup = async () => {
+      const group = await getGroup(rParams.groupId);
+      if (group.error) {
+        setError(group.error);
+      } else if (group.group) {
+        setGroup(group.group);
+      } else {
+        setError("Failed to fetch group");
+      }
+    };
+
+    fetchGroup();
+  }, [rParams.groupId]);
 
   const copyInviteLink = () => {
     console.log("copying invite link");
@@ -54,20 +68,6 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
     }
   };
 
-  useEffect(() => {
-    const fetchGroup = async () => {
-      const group = await getGroup(rParams.groupId);
-      if (group.error) {
-        setError(group.error);
-      } else if (group.group) {
-        setGroup(group.group);
-      } else {
-        setError("Failed to fetch group");
-      }
-    };
-
-    fetchGroup();
-  }, [rParams.groupId]);
 
   if (error) {
     return (
