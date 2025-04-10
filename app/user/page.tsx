@@ -11,6 +11,8 @@ import {
     DialogFooter,
 } from '@/app/components/ui/dialog';
 import { getUserWithGroups, UserWithGroups } from '@/app/actions/user';
+import { Button } from '@/app/components/ui/button';
+import { logout } from '@/app/actions/auth';
 
 export default function UserPage() {
 
@@ -31,12 +33,11 @@ export default function UserPage() {
       <main className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">User Profile</h1>
-          <a 
-            href="/logout"
-            className="text-red-500 hover:text-red-600 transition-colors"
+          <Button
+            onClick={() => logout()}
           >
             Logout
-          </a>
+          </Button>
         </div>
         <div className="bg-white p-6 rounded-lg shadow mb-6">
           <p className="text-gray-700">Username: <span className="font-semibold">{user.username}</span></p>
@@ -45,12 +46,11 @@ export default function UserPage() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold">Your Groups</h2>
-            <Link 
-              href="/groups/new"
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+            <Button
+              onClick={() => setIsCreateGroupDialogOpen(true)}
             >
               Create New Group
-            </Link>
+            </Button>
           </div>
           
           {user.groups.length === 0 ? (
