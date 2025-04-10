@@ -41,6 +41,16 @@ export async function createGroup(name: string, description?: string) {
 
 export async function getGroup(groupId: string) {
   const { id } = await verifySession();
+  const isMember = await prisma.groupMember.findFirst({
+    where: {
+      userId: id,
+      groupId: groupId,
+    },
+  });
+
+  if (!isMember) {
+    return { error: 'You are not a member of this group' };
+  }
 
   try {
     const group = await prisma.group.findUnique({
