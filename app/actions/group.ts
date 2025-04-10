@@ -1,16 +1,13 @@
 'use server';
 
 import { PrismaClient } from '@/generated/prisma_client';
-import { verifySession } from '@/app/lib/dal';
+import { verifySession } from '@/app/lib/session';
 
 const prisma = new PrismaClient();
 
 export async function createGroup(name: string, description?: string) {
   try {
-    const { isAuth, id } = await verifySession();
-    if (!isAuth) {
-      return { error: 'Unauthorized' };
-    }
+    const { id } = await verifySession();
 
     if (!name) {
       return { error: 'Group name is required' };

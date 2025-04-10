@@ -13,15 +13,49 @@ import {
 import { getUserWithGroups, UserWithGroups } from '@/app/actions/user';
 import { Button } from '@/app/components/ui/button';
 import { logout } from '@/app/actions/auth';
+import { createGroup } from '@/app/actions/group';
+import { Input } from '@/app/components/ui/input';
+import { Label } from '@/app/components/ui/label';
+import { Textarea } from '@/app/components/ui/textarea';
+import { useRouter } from 'next/navigation';
 
 export default function UserPage() {
+  const router = useRouter();
   const [user, setUser] = useState<UserWithGroups | null>(null);
   const [isCreateGroupDialogOpen, setIsCreateGroupDialogOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: ''
+  });
 
   useEffect(() => {
     const fetchUser = async () => setUser(await getUserWithGroups());
     fetchUser();
   }, [])
+
+  const handleCreateGroup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsCreating(true);
+    setError(null);
+
+    try {
+      const result = await createGroup(formData.name, formData.description);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setIsCreateGroupDialogOpen(false);
+        setFormData({ name: '', description: '' });
+        // Refresh the user data to show the new group
+        setUser(await getUserWithGroups());
+      }
+    } catch (err) {
+      setError('Failed to create group. Please try again.');
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   if (!user) {
     return <div>Loading...</div>;
@@ -74,15 +108,53 @@ export default function UserPage() {
           <DialogHeader>
             <DialogTitle>Create New Group</DialogTitle>
             <DialogDescription>
-              This is a description
+              Create a new group to start sharing expenses with friends.
             </DialogDescription>
           </DialogHeader>
-          <p>
-            This is a paragraph
-          </p>
-          <DialogFooter>
-            This is the footer
-          </DialogFooter>
+          <form onSubmit={handleCreateGroup}>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Group Name</Label>
+                <Input
+                  id="name"
+                  placeholder="Enter group name"
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description (Optional)</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Enter group description"
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  className="resize-none"
+                  rows={3}
+                />
+              </div>
+              {error && (
+                <p className="text-sm text-red-500 mt-2">{error}</p>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsCreateGroupDialogOpen(false)}
+                disabled={isCreating}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isCreating}
+              >
+                {isCreating ? 'Creating...' : 'Create Group'}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
