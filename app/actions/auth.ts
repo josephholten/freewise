@@ -2,11 +2,12 @@
 
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import { SignJWT } from "jose";
 import { cookies } from "next/headers";
 
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET!;
+const secretKey = process.env.JWT_SECRET!;
+const encodedKey = new TextEncoder().encode(secretKey);
 
 export async function register(username: string, password: string) {
   if (!username || !password) return { error: "username and password are required" };
@@ -39,20 +40,32 @@ export async function login(username: string, password: string) {
   const passwordMatch = await bcrypt.compare(password, user.password);
   if (!passwordMatch) return { error: "Invalid credentials" };
 
-  const token = jwt.sign(
-    { userId: user.id, username: user.username },
-    JWT_SECRET,
-    { expiresIn: "1h" }
-  );
+  const token = await new SignJWT(
+    { UserId: user.id, username: user.username },
+  )
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("1h")
+    .setIssuedAt()
+    .sign(encodedKey);
 
-  const c = await cookies();
-  c.set("token", token, { httpOnly: true, secure: true, path: "/" });
+  console.log('Setting cookie with token:', token);
+  const cookieStore = await cookies();
+  cookieStore.set(
+    "freewise-jwt", token, 
+    {
+      httpOnly: true,
+      secure: false,
+      path: "/",
+      sameSite: 'lax'
+    }
+  );
+  console.log('Cookie set successfully');
 
   return { success: "Login successful" };
 }
 
 export async function logout() {
   const c = await cookies();
-  c.set("token", "", { httpOnly: true, secure: true, path: "/", maxAge: 0 });
+  c.set("freewise-jwt", "", { httpOnly: true, secure: false, path: "/", maxAge: 0 });
   return { success: "Logged out" };
 }

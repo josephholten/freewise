@@ -33,7 +33,7 @@ const LoginForm = () => {
         setError(res.error);
       } else {
         console.log('Login successful');
-        router.push('/');
+        router.push('/user');
       }
 
       setIsLoading(false);
