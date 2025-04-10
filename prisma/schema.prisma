@@ -15,10 +15,13 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(uuid())
-  username String @unique
-  password String
-  groups   GroupMember[]
+  id            String         @id @default(uuid())
+  username      String         @unique
+  password      String
+  defaultCurrency String       @default("EUR")
+  groups        GroupMember[]
+  paidExpenses  Expense[]      @relation("PaidBy")
+  owedExpenses  ExpenseShare[] @relation("OwedBy")
 }
 
 model Group {
@@ -27,6 +30,7 @@ model Group {
   description String?
   createdAt   DateTime     @default(now())
   members     GroupMember[]
+  expenses    Expense[]
 }
 
 model GroupMember {
@@ -38,4 +42,34 @@ model GroupMember {
   group     Group    @relation(fields: [groupId], references: [id])
 
   @@unique([userId, groupId])
+}
+
+model Expense {
+  id          String         @id @default(uuid())
+  description String
+  amount      Float
+  currency    String         
+  date        DateTime       @default(now())
+  groupId     String
+  paidById    String
+  group       Group          @relation(fields: [groupId], references: [id])
+  paidBy      User           @relation("PaidBy", fields: [paidById], references: [id])
+  shares      ExpenseShare[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model ExpenseShare {
+  id          String   @id @default(uuid())
+  expenseId   String
+  userId      String
+  amount      Float
+  isPaid      Boolean  @default(false)
+  paidAt      DateTime?
+  expense     Expense  @relation(fields: [expenseId], references: [id])
+  user        User     @relation("OwedBy", fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([expenseId, userId])
 }

@@ -40,32 +40,57 @@ export async function createGroup(name: string, description?: string) {
 } 
 
 export async function getGroup(groupId: string) {
-  const { id } = await verifySession();
-  const isMember = await prisma.groupMember.findFirst({
-    where: {
-      userId: id,
-      groupId: groupId,
-    },
-  });
-
-  if (!isMember) {
-    return { error: 'You are not a member of this group' };
-  }
-
   try {
+    const session = await verifySession();
+    const userId = session.id;
+
+    // First check if the user is a member of the group
+    const membership = await prisma.groupMember.findFirst({
+      where: {
+        groupId: groupId,
+        userId: userId,
+      },
+    });
+
+    if (!membership) {
+      return { error: 'You are not a member of this group' };
+    }
+
+    // Fetch the group with its members and expenses
     const group = await prisma.group.findUnique({
-      where: { id: groupId },
+      where: {
+        id: groupId,
+      },
       include: {
         members: {
           include: {
-            user: true,
+            user: {
+              select: {
+                id: true,
+                username: true,
+              },
+            },
+          },
+        },
+        expenses: {
+          include: {
+            paidBy: {
+              select: {
+                username: true,
+              },
+            },
+          },
+          orderBy: {
+            date: 'desc',
           },
         },
       },
     });
+
     if (!group) {
       return { error: 'Group not found' };
     }
+
     return { success: true, group };
   } catch (error) {
     console.error('Error fetching group:', error);
