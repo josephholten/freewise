@@ -1,14 +1,18 @@
 "use client"
 import React, { useState } from 'react';
+import { login } from '../actions/auth';
+import { useRouter } from 'next/navigation';
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: '',
     rememberMe: false
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -21,16 +25,20 @@ const LoginForm = () => {
   const handleSubmit = (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Login attempted with:', formData);
+    console.log('Login attempted with:', formData);
+    login(formData.username, formData.password).then(res => {
+      if (res.error) {
+        setError(res.error);
+      } else {
+        console.log('Login successful');
+        router.push('/');
+      }
+
       setIsLoading(false);
-      // Here you would typically handle login logic
-    }, 1500);
+    })
   };
-
-  console.log(formData);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -45,16 +53,16 @@ const LoginForm = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                Username
               </label>
               <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
+                id="username"
+                name="username"
+                type="username"
+                autoComplete="username"
                 required
-                value={formData.email}
+                value={formData.username}
                 onChange={handleChange}
                 className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="hello"
@@ -120,7 +128,10 @@ const LoginForm = () => {
               )}
             </button>
           </div>
+
         </form>
+
+        {error && <p className="text-sm text-red-500">{error}</p>}
 
         <div className="text-center mt-4">
           <p className="text-sm text-gray-600">
