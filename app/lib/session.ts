@@ -10,7 +10,7 @@ const encodedKey = new TextEncoder().encode(secretKey)
 const hour = 60 * 60 * 1000;
 const day = 24 * hour;
  
-export async function encrypt(payload: JWTPayload) {
+export async function encrypt(payload: SessionPayload) {
   console.log("ENCRYPT serverside","payload", payload);
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
