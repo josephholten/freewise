@@ -1,34 +1,29 @@
-import { redirect } from 'next/navigation';
-import { verifySession } from '@/app/lib/session';
-import { PrismaClient, Group } from '@/generated/prisma_client';
+"use client"
+
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from '@/app/components/ui/dialog';
+import { getUserWithGroups, UserWithGroups } from '@/app/actions/user';
 
-const prisma = new PrismaClient();
+export default function UserPage() {
 
-type UserWithGroups = {
-  username: string;
-  groups: {
-    group: Group;
-  }[];
-};
+  const [user, setUser] = useState<UserWithGroups | null>(null);
+  const [isCreateGroupDialogOpen, setIsCreateGroupDialogOpen] = useState(false);
 
-export default async function UserPage() {
-  const { isAuth, id } = await verifySession();
-
-  const user = await prisma.user.findUnique({
-    where: { id },
-    select: { 
-      username: true,
-      groups: {
-        include: {
-          group: true
-        }
-      }
-    }
-  }) as UserWithGroups | null;
+  useEffect(() => {
+    const fetchUser = async () => setUser(await getUserWithGroups());
+    fetchUser();
+  }, [])
 
   if (!user) {
-    redirect('/login');
+    return <div>Loading...</div>;
   }
 
   return (
@@ -74,6 +69,25 @@ export default async function UserPage() {
           )}
         </div>
       </main>
+
+      <Dialog open={isCreateGroupDialogOpen} onOpenChange={setIsCreateGroupDialogOpen}>
+          <DialogContent>
+              <DialogHeader>
+                  <DialogTitle>Create New Group</DialogTitle>
+                  <DialogDescription>
+                      This is a description
+                  </DialogDescription>
+              </DialogHeader>
+              <p>
+                  This is a paragraph
+              </p>
+              <DialogFooter>
+                  This is the footer
+              </DialogFooter>
+          </DialogContent>
+      </Dialog>
+
     </div>
+
   );
 } 

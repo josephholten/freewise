@@ -79,5 +79,5 @@ export const verifySession = cache(async () => {
     redirect('/login')
   }
  
-  return { isAuth: true, id: payload.id }
+  return { id: payload.id }
 })
