@@ -5,6 +5,7 @@ import { PrismaClient, Group, GroupMember, User } from '@/generated/prisma_clien
 import { Button } from '@/app/components/ui/button';
 import Link from 'next/link';
 import { getGroup } from '@/app/actions/group';
+import { toast } from 'sonner';
 
 const prisma = new PrismaClient();
 
@@ -21,6 +22,13 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
   const [error, setError] = useState<string | null>(null);
 
   const rParams = use(params);
+
+  const copyInviteLink = () => {
+    console.log("copying invite link");
+    const inviteLink = `${window.location.origin}/invite/${rParams.groupId}`;
+    navigator.clipboard.writeText(inviteLink);
+    toast.success('Invite link copied to clipboard!');
+  };
 
   useEffect(() => {
     const fetchGroup = async () => {
@@ -75,10 +83,17 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
               ← Back to Dashboard
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold">{group.name}</h1>
-          {group.description && (
-            <p className="text-gray-600 mt-2">{group.description}</p>
-          )}
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold">{group.name}</h1>
+              {group.description && (
+                <p className="text-gray-600 mt-2">{group.description}</p>
+              )}
+            </div>
+            <Button onClick={copyInviteLink}>
+              Share Invite Link
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-6">

@@ -62,3 +62,35 @@ export async function getGroup(groupId: string) {
     return { error: 'Failed to fetch group' };
   }
 }
+
+export async function joinGroup(groupId: string) {
+  try {
+    const session = await verifySession();
+    const userId = session.id;
+
+    // Check if user is already a member
+    const existingMembership = await prisma.groupMember.findFirst({
+      where: {
+        groupId: groupId,
+        userId: userId,
+      },
+    });
+
+    if (existingMembership) {
+      return { error: 'You are already a member of this group' };
+    }
+
+    // Add user to group
+    await prisma.groupMember.create({
+      data: {
+        userId: userId,
+        groupId: groupId,
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error joining group:', error);
+    return { error: 'Failed to join group' };
+  }
+}
