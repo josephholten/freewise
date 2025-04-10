@@ -38,3 +38,27 @@ export async function createGroup(name: string, description?: string) {
     return { error: 'Failed to create group' };
   }
 } 
+
+export async function getGroup(groupId: string) {
+  const { id } = await verifySession();
+
+  try {
+    const group = await prisma.group.findUnique({
+      where: { id: groupId },
+      include: {
+        members: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+    if (!group) {
+      return { error: 'Group not found' };
+    }
+    return { success: true, group };
+  } catch (error) {
+    console.error('Error fetching group:', error);
+    return { error: 'Failed to fetch group' };
+  }
+}

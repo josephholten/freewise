@@ -90,12 +90,16 @@ export default function UserPage() {
           ) : (
             <div className="space-y-4">
               {user.groups.map(({ group }) => (
-                <div key={group.id} className="border-b pb-4">
-                  <h3 className="font-medium text-lg">{group.name}</h3>
+                <Link 
+                  href={`/group/${group.id}`} 
+                  key={group.id} 
+                  className="block border-b pb-4 hover:bg-gray-50 transition-colors rounded-lg p-4 -mx-4"
+                >
+                  <h3 className="font-medium text-lg text-primary">{group.name}</h3>
                   {group.description && (
                     <p className="text-gray-600 mt-1">{group.description}</p>
                   )}
-                </div>
+                </Link>
               ))}
             </div>
           )}
