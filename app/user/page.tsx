@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { verifySession } from '@/app/lib/dal';
+import { verifySession } from '@/app/lib/session';
 import { PrismaClient, Group } from '@/generated/prisma_client';
 import Link from 'next/link';
 
