@@ -34,7 +34,15 @@ export default async function UserPage() {
   return (
     <div className="min-h-screen p-8">
       <main className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">User Profile</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">User Profile</h1>
+          <a 
+            href="/logout"
+            className="text-red-500 hover:text-red-600 transition-colors"
+          >
+            Logout
+          </a>
+        </div>
         <div className="bg-white p-6 rounded-lg shadow mb-6">
           <p className="text-gray-700">Username: <span className="font-semibold">{user.username}</span></p>
         </div>
