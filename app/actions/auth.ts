@@ -11,6 +11,9 @@ const JWT_SECRET = process.env.JWT_SECRET!;
 export async function register(username: string, password: string) {
   if (!username || !password) return { error: "username and password are required" };
 
+  const existingUser = await prisma.user.findUnique({ where: { username } });
+  if (existingUser) return { error: "Username already exists" };
+
   const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(password, saltRounds);
 
@@ -19,8 +22,11 @@ export async function register(username: string, password: string) {
       data: { username, password: hashedPassword },
     });
     return { success: "User registered" };
-  } catch {
-    return { error: "User already exists" };
+  } catch (error) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+    return { error: "An unexpected error occurred" };
   }
 }
 

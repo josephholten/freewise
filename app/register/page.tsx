@@ -31,8 +31,10 @@ const RegisterForm = () => {
 
     const res = await register(formData.username, formData.password);
     if (res.error) {
+      console.error(res.error);
       setError(res.error);
     } else {
+      console.log("Sucessful registration");
       router.push('/login');
     }
     setIsLoading(false);
