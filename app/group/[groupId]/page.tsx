@@ -5,14 +5,28 @@ import { PrismaClient, Group, GroupMember, User, Expense } from '@/generated/pri
 import { Button } from '@/app/components/ui/button';
 import Link from 'next/link';
 import { getGroup, leaveGroup } from '@/app/actions/group';
+import { createExpense } from '@/app/actions/expense';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/app/components/ui/dialog';
+import { Input } from '@/app/components/ui/input';
+import { Label } from '@/app/components/ui/label';
 
 const prisma = new PrismaClient();
 
 type GroupWithMembers = Group & {
   members: (GroupMember & {
-    user: User;
+    user: {
+      id: string;
+      username: string;
+    };
   })[];
   expenses: (Expense & {
     paidBy: {
@@ -29,6 +43,13 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
   const [group, setGroup] = useState<GroupWithMembers | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLeaving, setIsLeaving] = useState(false);
+  const [isAddingExpense, setIsAddingExpense] = useState(false);
+  const [expenseForm, setExpenseForm] = useState({
+    description: '',
+    amount: '',
+    currency: 'EUR'
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchGroup = async () => {
@@ -73,6 +94,42 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
     }
   };
 
+  const handleAddExpense = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const amount = parseFloat(expenseForm.amount);
+      if (isNaN(amount)) {
+        toast.error('Please enter a valid amount');
+        return;
+      }
+
+      const result = await createExpense({
+        groupId: rParams.groupId,
+        description: expenseForm.description,
+        amount,
+        currency: expenseForm.currency
+      });
+
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success('Expense added successfully');
+        setIsAddingExpense(false);
+        setExpenseForm({ description: '', amount: '', currency: 'EUR' });
+        // Refresh group data to show new expense
+        const updatedGroup = await getGroup(rParams.groupId);
+        if (!updatedGroup.error && updatedGroup.group) {
+          setGroup(updatedGroup.group);
+        }
+      }
+    } catch (error) {
+      toast.error('Failed to add expense');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (error) {
     return (
@@ -150,7 +207,7 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
         <div className="mt-8">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Expenses</h2>
-            <Button>Add Expense</Button>
+            <Button onClick={() => setIsAddingExpense(true)}>Add Expense</Button>
           </div>
           
           {group.expenses.length === 0 ? (
@@ -188,6 +245,71 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
             </div>
           )}
         </div>
+
+        <Dialog open={isAddingExpense} onOpenChange={setIsAddingExpense}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Expense</DialogTitle>
+              <DialogDescription>
+                Add a new expense to the group. The amount will be split equally among all members.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleAddExpense}>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Input
+                    id="description"
+                    placeholder="What was this expense for?"
+                    value={expenseForm.description}
+                    onChange={(e) => setExpenseForm(prev => ({ ...prev, description: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="amount">Amount</Label>
+                    <Input
+                      id="amount"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      value={expenseForm.amount}
+                      onChange={(e) => setExpenseForm(prev => ({ ...prev, amount: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="currency">Currency</Label>
+                    <Input
+                      id="currency"
+                      value={expenseForm.currency}
+                      onChange={(e) => setExpenseForm(prev => ({ ...prev, currency: e.target.value }))}
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsAddingExpense(false)}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Adding...' : 'Add Expense'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
