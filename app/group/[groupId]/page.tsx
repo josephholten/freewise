@@ -5,19 +5,10 @@ import { PrismaClient, Group, GroupMember, User, Expense } from '@/generated/pri
 import { Button } from '@/app/components/ui/button';
 import Link from 'next/link';
 import { getGroup, leaveGroup } from '@/app/actions/group';
-import { createExpense } from '@/app/actions/expense';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/app/components/ui/dialog';
-import { Input } from '@/app/components/ui/input';
-import { Label } from '@/app/components/ui/label';
+import { AddExpenseDialog } from '@/app/components/group/AddExpenseDialog';
+import { ExpensesTable } from '@/app/components/group/ExpensesTable';
 
 const prisma = new PrismaClient();
 
@@ -44,25 +35,19 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
   const [error, setError] = useState<string | null>(null);
   const [isLeaving, setIsLeaving] = useState(false);
   const [isAddingExpense, setIsAddingExpense] = useState(false);
-  const [expenseForm, setExpenseForm] = useState({
-    description: '',
-    amount: '',
-    currency: 'EUR'
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const fetchGroup = async () => {
+    const group = await getGroup(rParams.groupId);
+    if (group.error) {
+      setError(group.error);
+    } else if (group.group) {
+      setGroup(group.group);
+    } else {
+      setError("Failed to fetch group");
+    }
+  };
 
   useEffect(() => {
-    const fetchGroup = async () => {
-      const group = await getGroup(rParams.groupId);
-      if (group.error) {
-        setError(group.error);
-      } else if (group.group) {
-        setGroup(group.group);
-      } else {
-        setError("Failed to fetch group");
-      }
-    };
-
     fetchGroup();
   }, [rParams.groupId]);
 
@@ -91,43 +76,6 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
       toast.error('Failed to leave group');
     } finally {
       setIsLeaving(false);
-    }
-  };
-
-  const handleAddExpense = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      const amount = parseFloat(expenseForm.amount);
-      if (isNaN(amount)) {
-        toast.error('Please enter a valid amount');
-        return;
-      }
-
-      const result = await createExpense({
-        groupId: rParams.groupId,
-        description: expenseForm.description,
-        amount,
-        currency: expenseForm.currency
-      });
-
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success('Expense added successfully');
-        setIsAddingExpense(false);
-        setExpenseForm({ description: '', amount: '', currency: 'EUR' });
-        // Refresh group data to show new expense
-        const updatedGroup = await getGroup(rParams.groupId);
-        if (!updatedGroup.error && updatedGroup.group) {
-          setGroup(updatedGroup.group);
-        }
-      }
-    } catch (error) {
-      toast.error('Failed to add expense');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -210,106 +158,15 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
             <Button onClick={() => setIsAddingExpense(true)}>Add Expense</Button>
           </div>
           
-          {group.expenses.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No expenses yet</p>
-          ) : (
-            <div className="border rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Date</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Description</th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">Amount</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Paid By</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {group.expenses.map((expense) => (
-                    <tr key={expense.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm text-gray-900">
-                        {new Date(expense.date).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">
-                        {expense.description}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                        {expense.amount.toFixed(2)} {expense.currency}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">
-                        {expense.paidBy.username}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <ExpensesTable expenses={group.expenses} />
         </div>
 
-        <Dialog open={isAddingExpense} onOpenChange={setIsAddingExpense}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Expense</DialogTitle>
-              <DialogDescription>
-                Add a new expense to the group. The amount will be split equally among all members.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleAddExpense}>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Input
-                    id="description"
-                    placeholder="What was this expense for?"
-                    value={expenseForm.description}
-                    onChange={(e) => setExpenseForm(prev => ({ ...prev, description: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="amount">Amount</Label>
-                    <Input
-                      id="amount"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      placeholder="0.00"
-                      value={expenseForm.amount}
-                      onChange={(e) => setExpenseForm(prev => ({ ...prev, amount: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="currency">Currency</Label>
-                    <Input
-                      id="currency"
-                      value={expenseForm.currency}
-                      onChange={(e) => setExpenseForm(prev => ({ ...prev, currency: e.target.value }))}
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsAddingExpense(false)}
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'Adding...' : 'Add Expense'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <AddExpenseDialog
+          groupId={rParams.groupId}
+          isOpen={isAddingExpense}
+          onOpenChange={setIsAddingExpense}
+          onExpenseAdded={fetchGroup}
+        />
       </main>
     </div>
   );
