@@ -4,8 +4,9 @@ import { use, useEffect, useState } from 'react';
 import { PrismaClient, Group, GroupMember, User } from '@/generated/prisma_client';
 import { Button } from '@/app/components/ui/button';
 import Link from 'next/link';
-import { getGroup } from '@/app/actions/group';
+import { getGroup, leaveGroup } from '@/app/actions/group';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 const prisma = new PrismaClient();
 
@@ -18,8 +19,10 @@ type GroupWithMembers = Group & {
 type PageParams = { groupId: string };
 
 export default function GroupPage({params}: {params: Promise<PageParams>}) {
+  const router = useRouter();
   const [group, setGroup] = useState<GroupWithMembers | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isLeaving, setIsLeaving] = useState(false);
 
   const rParams = use(params);
 
@@ -28,6 +31,27 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
     const inviteLink = `${window.location.origin}/invite/${rParams.groupId}`;
     navigator.clipboard.writeText(inviteLink);
     toast.success('Invite link copied to clipboard!');
+  };
+
+  const handleLeaveGroup = async () => {
+    if (!confirm('Are you sure you want to leave this group?')) {
+      return;
+    }
+
+    setIsLeaving(true);
+    try {
+      const result = await leaveGroup(rParams.groupId);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success('Successfully left the group');
+        router.push('/user');
+      }
+    } catch (error) {
+      toast.error('Failed to leave group');
+    } finally {
+      setIsLeaving(false);
+    }
   };
 
   useEffect(() => {
@@ -90,9 +114,18 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
                 <p className="text-gray-600 mt-2">{group.description}</p>
               )}
             </div>
-            <Button onClick={copyInviteLink}>
-              Share Invite Link
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={copyInviteLink}>
+                Share Invite Link
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={handleLeaveGroup}
+                disabled={isLeaving}
+              >
+                {isLeaving ? 'Leaving...' : 'Leave Group'}
+              </Button>
+            </div>
           </div>
         </div>
 

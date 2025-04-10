@@ -94,3 +94,25 @@ export async function joinGroup(groupId: string) {
     return { error: 'Failed to join group' };
   }
 }
+
+export async function leaveGroup(groupId: string) {
+  try {
+    const session = await verifySession();
+    const userId = session.id;
+
+    // Delete the membership
+    await prisma.groupMember.delete({
+      where: {
+        userId_groupId: {
+          userId: userId,
+          groupId: groupId,
+        },
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error leaving group:', error);
+    return { error: 'Failed to leave group' };
+  }
+}
