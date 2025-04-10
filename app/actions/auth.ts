@@ -2,12 +2,9 @@
 
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
-import { SignJWT } from "jose";
-import { cookies } from "next/headers";
+import { createSession, deleteSession } from "@/app/lib/session";
 
 const prisma = new PrismaClient();
-const secretKey = process.env.JWT_SECRET!;
-const encodedKey = new TextEncoder().encode(secretKey);
 
 export async function register(username: string, password: string) {
   if (!username || !password) return { error: "username and password are required" };
@@ -19,9 +16,10 @@ export async function register(username: string, password: string) {
   const hashedPassword = await bcrypt.hash(password, saltRounds);
 
   try {
-    await prisma.user.create({
+    const user = await prisma.user.create({
       data: { username, password: hashedPassword },
     });
+    await createSession(user.id);
     return { success: "User registered" };
   } catch (error) {
     if (error instanceof Error) {
@@ -36,36 +34,16 @@ export async function login(username: string, password: string) {
 
   const user = await prisma.user.findUnique({ where: { username } });
   if (!user) return { error: "Invalid credentials" };
+  console.log("LOGIN serverside","user", user);
 
   const passwordMatch = await bcrypt.compare(password, user.password);
   if (!passwordMatch) return { error: "Invalid credentials" };
 
-  const token = await new SignJWT(
-    { UserId: user.id, username: user.username },
-  )
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("1h")
-    .setIssuedAt()
-    .sign(encodedKey);
-
-  console.log('Setting cookie with token:', token);
-  const cookieStore = await cookies();
-  cookieStore.set(
-    "freewise-jwt", token, 
-    {
-      httpOnly: true,
-      secure: false,
-      path: "/",
-      sameSite: 'lax'
-    }
-  );
-  console.log('Cookie set successfully');
-
+  await createSession(user.id);
   return { success: "Login successful" };
 }
 
 export async function logout() {
-  const c = await cookies();
-  c.set("freewise-jwt", "", { httpOnly: true, secure: false, path: "/", maxAge: 0 });
+  await deleteSession();
   return { success: "Logged out" };
 }

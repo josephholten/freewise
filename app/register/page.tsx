@@ -35,7 +35,7 @@ const RegisterForm = () => {
       setError(res.error);
     } else {
       console.log("Sucessful registration");
-      router.push('/login');
+      router.push('/user');
     }
     setIsLoading(false);
   };
