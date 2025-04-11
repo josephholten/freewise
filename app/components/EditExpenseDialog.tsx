@@ -93,6 +93,7 @@ export function EditExpenseDialog({
         onExpenseEdited();
       }
     } catch (err) {
+      console.error(err);
       setError('Failed to save expense. Please try again.');
       toast.error('Failed to save expense');
     } finally {

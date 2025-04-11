@@ -4,12 +4,10 @@ import { useEffect, useState } from 'react';
 import { getUserWithGroups, UserWithGroups } from '@/app/actions/user';
 import { Button } from '@/app/components/ui/button';
 import { logout } from '@/app/actions/auth';
-import { useRouter } from 'next/navigation';
 import { CreateGroupDialog } from '@/app/components/CreateGroupDialog';
 import { GroupsList } from '@/app/components/GroupsList';
 
 export default function UserPage() {
-  const router = useRouter();
   const [user, setUser] = useState<UserWithGroups | null>(null);
   const [isCreateGroupDialogOpen, setIsCreateGroupDialogOpen] = useState(false);
 

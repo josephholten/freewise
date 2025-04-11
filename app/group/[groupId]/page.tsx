@@ -34,8 +34,8 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
   const [isLeaving, setIsLeaving] = useState(false);
   const [isAddingExpense, setIsAddingExpense] = useState(false);
 
-  const fetchGroup = async () => {
-    const group = await getGroup(rParams.groupId);
+  const fetchGroup = async (groupid: string) => {
+    const group = await getGroup(groupid);
     if (group.error) {
       setError(group.error);
     } else if (group.group) {
@@ -46,7 +46,7 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
   };
 
   useEffect(() => {
-    fetchGroup();
+    fetchGroup(rParams.groupId);
   }, [rParams.groupId]);
 
   const copyInviteLink = () => {
@@ -71,6 +71,7 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
         router.push('/user');
       }
     } catch (error) {
+      console.error(error);
       toast.error('Failed to leave group');
     } finally {
       setIsLeaving(false);
@@ -159,7 +160,7 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
           <ExpensesTable 
             expenses={group.expenses}
             groupId={rParams.groupId}
-            onUpdate={fetchGroup}
+            onUpdate={() => fetchGroup(rParams.groupId)}
           />
         </div>
 
@@ -167,7 +168,7 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
           groupId={rParams.groupId}
           isOpen={isAddingExpense}
           onOpenChange={setIsAddingExpense}
-          onExpenseEdited={fetchGroup}
+          onExpenseEdited={() => fetchGroup(rParams.groupId)}
         />
       </main>
     </div>

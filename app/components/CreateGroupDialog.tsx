@@ -42,6 +42,7 @@ export function CreateGroupDialog({ isOpen, onOpenChange, onGroupCreated }: Crea
         onGroupCreated();
       }
     } catch (err) {
+      console.error(err);
       setError('Failed to create group. Please try again.');
     } finally {
       setIsCreating(false);

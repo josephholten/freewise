@@ -1,4 +1,4 @@
-import { joinGroup, getGroup } from '@/app/actions/group';
+import { joinGroup } from '@/app/actions/group';
 import { redirect } from 'next/navigation';
 
 export default async function InvitePage({ params }: { params: { groupId: string } }) {

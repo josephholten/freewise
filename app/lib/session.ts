@@ -1,5 +1,5 @@
 import 'server-only'
-import { JWTPayload, SignJWT, jwtVerify } from 'jose'
+import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 import { SessionPayload } from './definitions'
 import { cache } from 'react'
@@ -8,7 +8,6 @@ import { redirect } from 'next/navigation'
 const secretKey = process.env.JWT_SECRET
 const encodedKey = new TextEncoder().encode(secretKey)
 const hour = 60 * 60 * 1000;
-const day = 24 * hour;
  
 export async function encrypt(payload: SessionPayload) {
   console.log("ENCRYPT serverside","payload", payload);
@@ -26,6 +25,7 @@ export async function decrypt(session: string | undefined = '') {
     })
     return payload as SessionPayload
   } catch (error) {
+    console.error(error);
     console.log('Failed to verify session')
   }
 }
