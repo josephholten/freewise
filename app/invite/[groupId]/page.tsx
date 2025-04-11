@@ -1,12 +1,14 @@
+"use client"
+
 import { joinGroup } from '@/app/actions/group';
 import { redirect } from 'next/navigation';
 import { use, useEffect, useState } from 'react';
-
+import { ErrorPage } from '@/app/components/ErrorPage';
 type PageParams = { groupId: string };
 
-export default function InvitePage(params: Promise<PageParams>) {
+export default function InvitePage({params}: {params: Promise<PageParams>}) {
   const rParams = use(params);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     joinGroup(rParams.groupId).then(result => {
@@ -21,13 +23,7 @@ export default function InvitePage(params: Promise<PageParams>) {
     });
   }, [rParams.groupId]);
 
-  // Otherwise show the error
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-red-500 mb-4">Error</h1>
-        <p className="text-gray-600">{error}</p>
-      </div>
-    </div>
+    <ErrorPage error={error} />
   );
 } 

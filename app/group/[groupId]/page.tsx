@@ -3,12 +3,14 @@
 import { use, useEffect, useState } from 'react';
 import { Group, GroupMember, Expense } from '@/prisma/generated/client';
 import { Button } from '@/app/components/ui/button';
-import Link from 'next/link';
 import { getGroup, leaveGroup } from '@/app/actions/group';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { EditExpenseDialog } from '@/app/components/EditExpenseDialog';
 import { ExpensesTable } from '@/app/components/ExpensesTable';
+import { LoadingPage } from '@/app/components/LoadingPage';
+import { ErrorPage } from '@/app/components/ErrorPage';
+import { BackToDashboard } from '@/app/components/BackToDashboard';
 
 type GroupWithMembers = Group & {
   members: (GroupMember & {
@@ -35,11 +37,13 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
   const [isAddingExpense, setIsAddingExpense] = useState(false);
 
   const fetchGroup = async (groupid: string) => {
-    const group = await getGroup(groupid);
-    if (group.error) {
-      setError(group.error);
-    } else if (group.group) {
-      setGroup(group.group);
+    const res = await getGroup(groupid);
+    if (!res.isAuth) {
+      router.push('/login');
+    } else if (res.error) {
+      setError(res.error);
+    } else if (res.group) {
+      setGroup(res.group);
     } else {
       setError("Failed to fetch group");
     }
@@ -47,7 +51,7 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
 
   useEffect(() => {
     fetchGroup(rParams.groupId);
-  }, [rParams.groupId]);
+  });
 
   const copyInviteLink = () => {
     console.log("copying invite link");
@@ -79,43 +83,18 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
   };
 
   if (error) {
-    return (
-      <div className="min-h-screen p-8">
-        <main className="max-w-4xl mx-auto">
-          <div className="text-center">
-            <p className="text-red-500">{error}</p>
-            <Link href="/user">
-              <Button variant="link" className="mt-4">
-                Return to Dashboard
-              </Button>
-            </Link>
-          </div>
-        </main>
-      </div>
-    );
+    return <ErrorPage error={error} />
   }
 
   if (!group) {
-    return (
-      <div className="min-h-screen p-8">
-        <main className="max-w-4xl mx-auto">
-          <div className="text-center">
-            Loading...
-          </div>
-        </main>
-      </div>
-    );
+    return <LoadingPage />
   }
 
   return (
     <div className="min-h-screen p-8">
       <main className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <Link href="/user">
-            <Button variant="ghost" className="mb-4">
-              ← Back to Dashboard
-            </Button>
-          </Link>
+          <BackToDashboard />
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold">{group.name}</h1>

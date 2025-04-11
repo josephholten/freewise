@@ -10,8 +10,11 @@ export async function createExpense(data: {
   currency: string;
 }) {
   try {
-    const session = await verifySession();
-    const userId = session.id;
+    const res = await verifySession();
+    if (!res.isAuth || !res.payload) {
+      return { error: res.error || 'INVALID_SESSION' }
+    }
+    const userId = res.payload.id;
 
     // Verify user is member of the group
     const membership = await prisma.groupMember.findFirst({
@@ -53,8 +56,11 @@ export async function updateExpense(expenseId: string, data: {
   currency: string;
 }) {
   try {
-    const session = await verifySession();
-    const userId = session.id;
+    const res = await verifySession();
+    if (!res.isAuth || !res.payload) {
+      return { error: res.error || 'INVALID_SESSION' }
+    }
+    const userId = res.payload.id;
 
     // Verify user is the one who paid for the expense
     const expense = await prisma.expense.findUnique({
@@ -96,8 +102,11 @@ export async function updateExpense(expenseId: string, data: {
 
 export async function deleteExpense(expenseId: string) {
   try {
-    const session = await verifySession();
-    const userId = session.id;
+    const res = await verifySession();
+    if (!res.isAuth || !res.payload) {
+      return { error: res.error || 'INVALID_SESSION' }
+    }
+    const userId = res.payload.id;
 
     // Verify user is the one who paid for the expense
     const expense = await prisma.expense.findUnique({

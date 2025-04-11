@@ -5,7 +5,11 @@ import { verifySession } from '@/app/lib/session';
 
 export async function createGroup(name: string, description?: string) {
   try {
-    const { id } = await verifySession();
+    const res = await verifySession();
+    if (!res.isAuth || !res.payload) {
+      return { error: res.error || 'INVALID_SESSION', isAuth: false }
+    }
+    const userId = res.payload.id;
 
     if (!name) {
       return { error: 'Group name is required' };
@@ -22,7 +26,7 @@ export async function createGroup(name: string, description?: string) {
 
       await tx.groupMember.create({
         data: {
-          userId: id,
+          userId,
           groupId: newGroup.id,
         },
       });
@@ -30,7 +34,7 @@ export async function createGroup(name: string, description?: string) {
       return newGroup;
     });
 
-    return { success: true, group };
+    return { success: true, group, isAuth: true };
   } catch (error) {
     console.error('Error creating group:', error);
     return { error: 'Failed to create group' };
@@ -39,8 +43,11 @@ export async function createGroup(name: string, description?: string) {
 
 export async function getGroup(groupId: string) {
   try {
-    const session = await verifySession();
-    const userId = session.id;
+    const res = await verifySession();
+    if (!res.isAuth || !res.payload) {
+      return { error: res.error || 'INVALID_SESSION', isAuth: false }
+    }
+    const userId = res.payload.id;
 
     // First check if the user is a member of the group
     const membership = await prisma.groupMember.findFirst({
@@ -89,7 +96,7 @@ export async function getGroup(groupId: string) {
       return { error: 'Group not found' };
     }
 
-    return { success: true, group };
+    return { success: true, group, isAuth: true };
   } catch (error) {
     console.error('Error fetching group:', error);
     return { error: 'Failed to fetch group' };
@@ -98,8 +105,11 @@ export async function getGroup(groupId: string) {
 
 export async function joinGroup(groupId: string) {
   try {
-    const session = await verifySession();
-    const userId = session.id;
+    const res = await verifySession();
+    if (!res.isAuth || !res.payload) {
+      return { error: res.error || 'INVALID_SESSION', isAuth: false }
+    }
+    const userId = res.payload.id;
 
     // Check if user is already a member
     const existingMembership = await prisma.groupMember.findFirst({
@@ -121,7 +131,7 @@ export async function joinGroup(groupId: string) {
       },
     });
 
-    return { success: true };
+    return { success: true, isAuth: true };
   } catch (error) {
     console.error('Error joining group:', error);
     return { error: 'Failed to join group' };
@@ -130,8 +140,11 @@ export async function joinGroup(groupId: string) {
 
 export async function leaveGroup(groupId: string) {
   try {
-    const session = await verifySession();
-    const userId = session.id;
+    const res = await verifySession();
+    if (!res.isAuth || !res.payload) {
+      return { success: false, error: res.error || 'INVALID_SESSION', isAuth: false }
+    }
+    const userId = res.payload.id;
 
     // Delete the membership
     await prisma.groupMember.delete({
@@ -169,9 +182,9 @@ export async function leaveGroup(groupId: string) {
       },
     });
 
-    return { success: true };
+    return { success: true, isAuth: true };
   } catch (error) {
     console.error('Error leaving group:', error);
-    return { error: 'Failed to leave group' };
+    return { success: false, error: 'Failed to leave group' };
   }
 }

@@ -12,7 +12,11 @@ export type UserWithGroups = {
 };
 
 export async function getUserWithGroups() {
-  const { id } = await verifySession();
+  const res = await verifySession();
+  if (!res.isAuth || !res.payload) {
+    return { success: false, error: res.error || 'INVALID_SESSION', isAuth: false, user: null }
+  }
+  const { id } = res.payload;
   const user = await prisma.user.findUnique({
     where: { id },
     select: { 
@@ -25,5 +29,5 @@ export async function getUserWithGroups() {
     }
   }) as UserWithGroups | null;
   console.log("getUserWithGroups", user);
-  return user;
+  return { success: true, user, isAuth: true, error: null };
 }

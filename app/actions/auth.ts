@@ -18,9 +18,10 @@ export async function register(username: string, password: string) {
   try {
     const user = await prisma.user.create({
       data: { username, password: hashedPassword },
+      // default role should be user
     });
-    await createSession(user.id);
-    return { success: "User registered" };
+    await createSession(user.id, user.role);
+    return { success: "User registered", user: user };
   } catch (error) {
     if (error instanceof Error) {
       return { error: error.message };
@@ -32,19 +33,18 @@ export async function register(username: string, password: string) {
 export async function login(username: string, password: string) {
   if (!username || !password) return { error: "username and password are required" };
 
-  const user = await prisma.user.findUnique({ where: { username } });
+  const user = await prisma.user.findUnique({ where: { username }, select: { id: true, password: true, role: true } });
   if (!user) return { error: "Invalid credentials" };
   console.log("LOGIN serverside","user", user);
 
   const passwordMatch = await bcrypt.compare(password, user.password);
   if (!passwordMatch) return { error: "Invalid credentials" };
 
-  await createSession(user.id);
+  await createSession(user.id, user.role);
   return { success: "Login successful" };
 }
 
 export async function logout() {
   await deleteSession();
   redirect('/login');
-  return { success: "Logged out" };
 }

@@ -6,19 +6,37 @@ import { Button } from '@/app/components/ui/button';
 import { logout } from '@/app/actions/auth';
 import { CreateGroupDialog } from '@/app/components/CreateGroupDialog';
 import { GroupsList } from '@/app/components/GroupsList';
+import { useRouter } from 'next/navigation';
+import { ErrorPage } from '../components/ErrorPage';
+import { LoadingPage } from '../components/LoadingPage';
 
 export default function UserPage() {
   const [user, setUser] = useState<UserWithGroups | null>(null);
   const [isCreateGroupDialogOpen, setIsCreateGroupDialogOpen] = useState(false);
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchUser = async () => setUser(await getUserWithGroups());
+  const fetchUser = async () => {
+    const res = await getUserWithGroups();
+    if (!res.isAuth) {
+      router.push('/login');
+    } else if (res.error) {
+      setError(res.error);
+    } else if (res.user) {
+      setUser(res.user);
+    }
+  }
 
   useEffect(() => {
     fetchUser();
-  }, []);
+  });
+
+  if (error) {
+    return <ErrorPage error={error} />
+  }
 
   if (!user) {
-    return <div>Loading...</div>;
+    return <LoadingPage />
   }
 
   return (
