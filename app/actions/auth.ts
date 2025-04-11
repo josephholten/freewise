@@ -3,6 +3,7 @@
 import { prisma } from "@/app/lib/prisma";
 import bcrypt from "bcrypt";
 import { createSession, deleteSession } from "@/app/lib/session";
+import { redirect } from "next/navigation";
 
 
 export async function register(username: string, password: string) {
@@ -44,5 +45,6 @@ export async function login(username: string, password: string) {
 
 export async function logout() {
   await deleteSession();
+  redirect('/login');
   return { success: "Logged out" };
 }

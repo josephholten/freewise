@@ -1,6 +1,3 @@
-bugs:
-  - logout takes two presses
-
 features:
   - userpage: new path /user/<userid>
 
