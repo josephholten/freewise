@@ -4,10 +4,9 @@ COPY package.json ./
 COPY prisma ./prisma
 RUN npm install
 RUN npm install @prisma/client
+RUN npx prisma generate
 
 COPY . .
-
-RUN npx prisma generate
 
 CMD npm run dev
 
