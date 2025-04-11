@@ -47,4 +47,51 @@ export async function createExpense(data: {
     console.error('Error creating expense:', error);
     return { error: 'Failed to create expense' };
   }
+}
+
+export async function updateExpense(expenseId: string, data: {
+  description: string;
+  amount: number;
+  currency: string;
+}) {
+  try {
+    const session = await verifySession();
+    const userId = session.id;
+
+    // Verify user is the one who paid for the expense
+    const expense = await prisma.expense.findUnique({
+      where: { id: expenseId },
+      include: { paidBy: true },
+    });
+
+    if (!expense) {
+      return { error: 'Expense not found' };
+    }
+
+    if (expense.paidById !== userId) {
+      return { error: 'You can only edit expenses you paid for' };
+    }
+
+    // Update the expense
+    const updatedExpense = await prisma.expense.update({
+      where: { id: expenseId },
+      data: {
+        description: data.description,
+        amount: data.amount,
+        currency: data.currency,
+      },
+      include: {
+        paidBy: {
+          select: {
+            username: true,
+          },
+        },
+      },
+    });
+
+    return { success: true, expense: updatedExpense };
+  } catch (error) {
+    console.error('Error updating expense:', error);
+    return { error: 'Failed to update expense' };
+  }
 } 

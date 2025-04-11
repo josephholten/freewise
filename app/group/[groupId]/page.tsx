@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { getGroup, leaveGroup } from '@/app/actions/group';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { AddExpenseDialog } from '@/app/components/EditExpenseDialog';
+import { EditExpenseDialog } from '@/app/components/EditExpenseDialog';
 import { ExpensesTable } from '@/app/components/ExpensesTable';
 
 const prisma = new PrismaClient();
@@ -158,14 +158,18 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
             <Button onClick={() => setIsAddingExpense(true)}>Add Expense</Button>
           </div>
           
-          <ExpensesTable expenses={group.expenses} />
+          <ExpensesTable 
+            expenses={group.expenses}
+            groupId={rParams.groupId}
+            onUpdate={fetchGroup}
+          />
         </div>
 
-        <AddExpenseDialog
+        <EditExpenseDialog
           groupId={rParams.groupId}
           isOpen={isAddingExpense}
           onOpenChange={setIsAddingExpense}
-          onExpenseAdded={fetchGroup}
+          onExpenseEdited={fetchGroup}
         />
       </main>
     </div>
