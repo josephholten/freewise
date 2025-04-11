@@ -11,6 +11,7 @@ import { ExpensesTable } from '@/app/components/ExpensesTable';
 import { LoadingPage } from '@/app/components/LoadingPage';
 import { ErrorPage } from '@/app/components/ErrorPage';
 import { BackToDashboard } from '@/app/components/BackToDashboard';
+import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 
 type GroupWithMembers = Group & {
   members: (GroupMember & {
@@ -36,7 +37,7 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
   const [isLeaving, setIsLeaving] = useState(false);
   const [isAddingExpense, setIsAddingExpense] = useState(false);
 
-  const fetchGroup = async (groupid: string) => {
+  const fetchGroup = async (groupid: string, router: AppRouterInstance) => {
     const res = await getGroup(groupid);
     if (!res.isAuth) {
       router.push('/login');
@@ -50,8 +51,8 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
   };
 
   useEffect(() => {
-    fetchGroup(rParams.groupId);
-  });
+    fetchGroup(rParams.groupId, router);
+  }, [rParams.groupId, router]);
 
   const copyInviteLink = () => {
     console.log("copying invite link");
@@ -139,7 +140,7 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
           <ExpensesTable 
             expenses={group.expenses}
             groupId={rParams.groupId}
-            onUpdate={() => fetchGroup(rParams.groupId)}
+            onUpdate={() => fetchGroup(rParams.groupId, router)}
           />
         </div>
 
@@ -147,7 +148,7 @@ export default function GroupPage({params}: {params: Promise<PageParams>}) {
           groupId={rParams.groupId}
           isOpen={isAddingExpense}
           onOpenChange={setIsAddingExpense}
-          onExpenseEdited={() => fetchGroup(rParams.groupId)}
+          onExpenseEdited={() => fetchGroup(rParams.groupId, router)}
         />
       </main>
     </div>

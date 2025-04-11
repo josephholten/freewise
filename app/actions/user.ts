@@ -13,7 +13,7 @@ export type UserWithGroups = {
 
 export async function getUserWithGroups() {
   const res = await verifySession();
-  if (!res.isAuth || !res.payload) {
+  if (!res.isAuth || !res.payload || res.error || !res.payload.id) {
     return { success: false, error: res.error || 'INVALID_SESSION', isAuth: false, user: null }
   }
   const { id } = res.payload;
@@ -27,7 +27,9 @@ export async function getUserWithGroups() {
         }
       }
     }
-  }) as UserWithGroups | null;
-  console.log("getUserWithGroups", user);
+  }) as UserWithGroups;
+  if (!user) {
+    return { success: false, error: 'USER_NOT_FOUND', isAuth: true, user: null }
+  }
   return { success: true, user, isAuth: true, error: null };
 }
