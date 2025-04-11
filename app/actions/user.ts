@@ -1,7 +1,8 @@
 "use server"
 
 import { verifySession } from "@/app/lib/session";
-import { Group, PrismaClient } from "@/generated/prisma_client";
+import { Group } from "@/generated/prisma_client";
+import { prisma } from "@/app/lib/prisma";
 
 export type UserWithGroups = {
   username: string;
@@ -12,8 +13,7 @@ export type UserWithGroups = {
 
 export async function getUserWithGroups() {
   const { id } = await verifySession();
-  const prisma = new PrismaClient();
-  const user =await prisma.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { id },
     select: { 
       username: true,

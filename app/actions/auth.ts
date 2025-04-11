@@ -1,10 +1,9 @@
 "use server"
 
-import { PrismaClient } from "@/generated/prisma_client";
+import { prisma } from "@/app/lib/prisma";
 import bcrypt from "bcrypt";
 import { createSession, deleteSession } from "@/app/lib/session";
 
-const prisma = new PrismaClient();
 
 export async function register(username: string, password: string) {
   if (!username || !password) return { error: "username and password are required" };

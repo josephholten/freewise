@@ -1,7 +1,7 @@
 "use client"
 
 import { use, useEffect, useState } from 'react';
-import { PrismaClient, Group, GroupMember, User, Expense } from '@/generated/prisma_client';
+import { Group, GroupMember, Expense } from '@/generated/prisma_client';
 import { Button } from '@/app/components/ui/button';
 import Link from 'next/link';
 import { getGroup, leaveGroup } from '@/app/actions/group';
@@ -9,8 +9,6 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { EditExpenseDialog } from '@/app/components/EditExpenseDialog';
 import { ExpensesTable } from '@/app/components/ExpensesTable';
-
-const prisma = new PrismaClient();
 
 type GroupWithMembers = Group & {
   members: (GroupMember & {
