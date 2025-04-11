@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/app/components/ui/button';
-import { Group } from '@/prisma/generated/client';
+import { Group } from '@prisma/client';
 
 interface GroupWithMember {
   group: Group;

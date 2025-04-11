@@ -1,7 +1,7 @@
 "use client"
 
 import { use, useEffect, useState } from 'react';
-import { Group, GroupMember, Expense } from '@/prisma/generated/client';
+import { Group, GroupMember, Expense } from '@prisma/client';
 import { Button } from '@/app/components/ui/button';
 import { getGroup, leaveGroup } from '@/app/actions/group';
 import { toast } from 'sonner';
