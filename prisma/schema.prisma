@@ -14,10 +14,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
   id            String         @id @default(uuid())
   username      String         @unique
   password      String
+  role          Role           @default(USER)
   defaultCurrency String       @default("EUR")
   groups        GroupMember[]
   paidExpenses  Expense[]      @relation("PaidBy")

@@ -5,6 +5,7 @@ services:
     working_dir: /app
     volumes:
       - ./app/:/app/app
+      - ./prisma/seed.ts/:/app/prisma/seed.ts
       - /app/node_modules
     ports:
       - '3000:3000'

@@ -22,23 +22,24 @@ const LoginForm = () => {
     }));
   };
 
-  const handleSubmit = (e: React.ChangeEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
     console.log('Login attempted with:', formData);
-    login(formData.username, formData.password).then(res => {
-      console.log('Login response:', res);
-      if (res.error) {
-        setError(res.error);
-      } else {
-        console.log('Login successful');
-        router.push('/user');
-      }
+    const res = await login(formData.username, formData.password)
+    if (!res) {
+      setError('error: login response is null');
+    }
+    if (res.error) {
+      setError(res.error);
+    } else {
+      console.log('Login successful');
+      router.push('/user');
+    }
 
-      setIsLoading(false);
-    })
+    setIsLoading(false);
   };
 
   return (
