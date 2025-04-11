@@ -2,6 +2,10 @@ bugs:
   - logout takes two presses
 
 features:
+  - userpage: new path /user/<userid>
+
+  - invite link: /invite/<groupid> with some kind of unique key
+
   - some kind of landing page with some general info
     - login button on top right
 
