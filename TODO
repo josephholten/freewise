@@ -1,0 +1,22 @@
+bugs:
+  - logout takes two presses
+
+- some kind of landing page with some general info
+  - login button on top right
+
+- impressum
+- delete expenses
+- delete groups by leaving as last person, warn about that before leaving as last person, i.e. make button change
+- in editexpense add participants and select splitting algorithm
+- make tally algorithm
+- export as csv and select date range
+- make some kind of reporting, i.e. graphs
+
+- make admin page more useful, i.e. view/edit all groups/users, make him not useable else???? 
+
+- host it with vercel? or just with max?
+- or maybe on my own server?
+
+- logo/ favicon
+
+- better styling
