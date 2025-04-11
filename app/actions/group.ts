@@ -143,6 +143,32 @@ export async function leaveGroup(groupId: string) {
       },
     });
 
+    // if last member, delete group
+    const group = await prisma.group.findUnique({
+      where: {
+        id: groupId,
+      },
+      include: {
+        members: true,
+      },
+    });
+
+    if (group?.members.length && group.members.length <= 1) {
+      await prisma.group.delete({
+        where: {
+          id: groupId,
+        },
+      });
+      console.log('Group', groupId, 'deleted');
+    }
+
+    // delete all expenses
+    await prisma.expense.deleteMany({
+      where: {
+        groupId: groupId,
+      },
+    });
+
     return { success: true };
   } catch (error) {
     console.error('Error leaving group:', error);

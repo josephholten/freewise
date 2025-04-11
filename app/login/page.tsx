@@ -29,6 +29,7 @@ const LoginForm = () => {
 
     console.log('Login attempted with:', formData);
     login(formData.username, formData.password).then(res => {
+      console.log('Login response:', res);
       if (res.error) {
         setError(res.error);
       } else {
