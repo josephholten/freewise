@@ -18,3 +18,5 @@ docker-compose exec freewise npx prisma db seed
 ```
 
 this will run the script `prisma/seed.ts`
+
+## vercel
