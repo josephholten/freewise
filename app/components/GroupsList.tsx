@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/app/components/ui/button';
-import { Group } from '@/generated/prisma_client';
+import { Group } from '@/prisma/generated/client';
 
 interface GroupWithMember {
   group: Group;
@@ -22,7 +22,7 @@ export function GroupsList({ groups, onCreateGroup }: GroupsListProps) {
       </div>
     
       {groups.length === 0 ? (
-        <p className="text-gray-500">You haven't joined any groups yet.</p>
+        <p className="text-gray-500">{"You haven't joined any groups yet."}</p>
       ) : (
         <div className="space-y-4">
           {groups.map(({ group }) => (

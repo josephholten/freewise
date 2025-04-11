@@ -11,7 +11,7 @@ import {
   DialogFooter,
 } from '@/app/components/ui/dialog';
 import { toast } from 'sonner';
-import { Expense } from '@/generated/prisma_client';
+import { Expense } from '@/prisma/generated/client';
 import { createExpense, updateExpense } from '@/app/actions/expense';
 
 interface EditExpenseDialogProps {
