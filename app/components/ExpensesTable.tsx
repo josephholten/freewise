@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Expense } from '@/prisma/generated/client';
+import { Expense } from '@prisma/client';
 import { EditExpenseDialog } from './EditExpenseDialog';
 
 interface ExpenseWithPaidBy extends Expense {

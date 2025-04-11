@@ -1,7 +1,7 @@
 "use server"
 
 import { verifySession } from "@/app/lib/session";
-import { Group } from "@/prisma/generated/client";
+import { Group } from "@prisma/client";
 import { prisma } from "@/app/lib/prisma";
 
 export type UserWithGroups = {
