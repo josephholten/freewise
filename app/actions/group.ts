@@ -1,7 +1,7 @@
 'use server';
 
 import { prisma } from '@/app/lib/prisma';
-import { verifySession } from '@/app/lib/session';
+import { verifySession, verifyAdmin } from '@/app/lib/session';
 
 export async function createGroup(name: string, description?: string) {
   try {
@@ -186,5 +186,80 @@ export async function leaveGroup(groupId: string) {
   } catch (error) {
     console.error('Error leaving group:', error);
     return { success: false, error: 'Failed to leave group' };
+  }
+}
+
+export async function getAllGroups() {
+  try {
+    const res = await verifyAdmin();
+    if (!res.isAuth || res.error) {
+      return { success: false, error: res.error || 'INVALID_ADMIN_SESSION', groups: null }
+    }
+
+    const groups = await prisma.group.findMany({
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        createdAt: true,
+        _count: {
+          select: {
+            members: true
+          }
+        }
+      },
+      orderBy: {
+        name: 'asc'
+      }
+    });
+
+    return { 
+      success: true, 
+      groups,
+      error: null
+    };
+  } catch (error) {
+    console.error('Error listing groups:', error);
+    return { success: false, error: 'FAILED_TO_FETCH_GROUPS', groups: null };
+  }
+}
+
+export async function getAllGroupMemberships() {
+  try {
+    const res = await verifyAdmin();
+    if (!res.isAuth || res.error) {
+      return { success: false, error: res.error || 'INVALID_ADMIN_SESSION', memberships: null }
+    }
+
+    const memberships = await prisma.groupMember.findMany({
+      select: {
+        id: true,
+        userId: true,
+        groupId: true,
+        joinedAt: true,
+        user: {
+          select: {
+            username: true
+          }
+        },
+        group: {
+          select: {
+            name: true
+          }
+        }
+      },
+      orderBy: {
+        joinedAt: 'desc'
+      }
+    });
+
+    return { 
+      success: true, 
+      memberships,
+      error: null
+    };
+  } catch (error) {
+    console.error('Error listing group memberships:', error);
+    return { success: false, error: 'FAILED_TO_FETCH_MEMBERSHIPS', memberships: null };
   }
 }

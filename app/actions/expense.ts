@@ -1,7 +1,7 @@
 'use server';
 
 import { prisma } from '@/app/lib/prisma';
-import { verifySession } from '@/app/lib/session';
+import { verifyAdmin, verifySession } from '@/app/lib/session';
 
 export async function createExpense(data: {
   groupId: string;
@@ -150,3 +150,97 @@ export async function deleteExpense(expenseId: string) {
     return { error: 'Failed to delete expense' };
   }
 } 
+
+export async function getAllExpenses() {
+  try {
+    const res = await verifyAdmin();
+    if (!res.isAuth || res.error) {
+      return { success: false, error: res.error || 'INVALID_ADMIN_SESSION', expenses: null }
+    }
+
+    const expenses = await prisma.expense.findMany({
+      select: {
+        id: true,
+        description: true,
+        amount: true,
+        currency: true,
+        date: true,
+        groupId: true,
+        paidById: true,
+        createdAt: true,
+        updatedAt: true,
+        group: {
+          select: {
+            name: true
+          }
+        },
+        paidBy: {
+          select: {
+            username: true
+          }
+        }
+      },
+      orderBy: {
+        date: 'desc'
+      }
+    });
+
+    return { 
+      success: true, 
+      expenses,
+      error: null
+    };
+  } catch (error) {
+    console.error('Error listing expenses:', error);
+    return { success: false, error: 'FAILED_TO_FETCH_EXPENSES', expenses: null };
+  }
+}
+
+export async function getAllExpenseShares() {
+  try {
+    const res = await verifyAdmin();
+    if (!res.isAuth || res.error) {
+      return { success: false, error: res.error || 'INVALID_ADMIN_SESSION', shares: null }
+    }
+
+    const shares = await prisma.expenseShare.findMany({
+      select: {
+        id: true,
+        expenseId: true,
+        userId: true,
+        amount: true,
+        isPaid: true,
+        paidAt: true,
+        createdAt: true,
+        updatedAt: true,
+        expense: {
+          select: {
+            description: true,
+            group: {
+              select: {
+                name: true
+              }
+            }
+          }
+        },
+        user: {
+          select: {
+            username: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    return { 
+      success: true, 
+      shares,
+      error: null
+    };
+  } catch (error) {
+    console.error('Error listing expense shares:', error);
+    return { success: false, error: 'FAILED_TO_FETCH_SHARES', shares: null };
+  }
+}

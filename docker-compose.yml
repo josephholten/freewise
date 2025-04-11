@@ -31,5 +31,21 @@ services:
       timeout: 2s
       retries: 20
 
+  freewise-studio:
+    build:
+      context: .
+      dockerfile: Dockerfile.studio
+    working_dir: /app
+    volumes:
+      - /app/node_modules
+    ports:
+      - '5555:5555'
+    depends_on:
+      test-db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://test:1234@test-db:5432/freewise?schema=public
+ 
+
 volumes:
   postgres-data:
