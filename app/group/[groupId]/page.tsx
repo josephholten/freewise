@@ -7,8 +7,8 @@ import Link from 'next/link';
 import { getGroup, leaveGroup } from '@/app/actions/group';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { AddExpenseDialog } from '@/app/components/group/AddExpenseDialog';
-import { ExpensesTable } from '@/app/components/group/ExpensesTable';
+import { AddExpenseDialog } from '@/app/components/AddExpenseDialog';
+import { ExpensesTable } from '@/app/components/ExpensesTable';
 
 const prisma = new PrismaClient();
 

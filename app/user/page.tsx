@@ -5,8 +5,8 @@ import { getUserWithGroups, UserWithGroups } from '@/app/actions/user';
 import { Button } from '@/app/components/ui/button';
 import { logout } from '@/app/actions/auth';
 import { useRouter } from 'next/navigation';
-import { CreateGroupDialog } from '@/app/components/group/CreateGroupDialog';
-import { GroupsList } from '@/app/components/group/GroupsList';
+import { CreateGroupDialog } from '@/app/components/CreateGroupDialog';
+import { GroupsList } from '@/app/components/GroupsList';
 
 export default function UserPage() {
   const router = useRouter();
