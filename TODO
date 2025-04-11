@@ -6,6 +6,10 @@ features:
   - some kind of landing page with some general info
     - login button on top right
 
+  - login page:
+    - forgot your password does not yet work
+    - remember me not fully implemented? the user is always remembered... -> simply remove
+
   - impressum
   - delete expenses
   - delete groups by leaving as last person, warn about that before leaving as last person, i.e. make button change
@@ -22,3 +26,9 @@ features:
   - logo/ favicon
 
   - better styling
+  - show loading screen when loading page/ data
+
+  - change password -> account settings page
+  - have email
+
+  - have editexpensedialog use upsert
