@@ -14,6 +14,7 @@ services:
         condition: service_healthy
     environment:
       - DATABASE_URL=postgresql://test:1234@test-db:5432/freewise?schema=public
+      - BINARY_TARGET=native
       - JWT_SECRET=test
       
   test-db:
