@@ -16,7 +16,8 @@ async function main() {
       data: {
         username: 'admin',
         password: hashedPassword,
-        defaultCurrency: 'EUR'
+        defaultCurrency: 'EUR',
+        role: 'ADMIN'
       }
     });
 
