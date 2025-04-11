@@ -50,7 +50,7 @@ export function ExpensesTable({ expenses, groupId, onUpdate }: ExpensesTableProp
                 <td className="px-4 py-3 text-sm text-gray-900">
                   {expense.description}
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-900 text-right">
+                <td className="px-4 py-3 text-sm text-gray-900 text-right font-mono">
                   {expense.amount.toFixed(2)} {expense.currency}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-900">
